@@ -180,6 +180,7 @@ class ToolsFnAgent:
         try:
             import tools  # noqa: F401
         except Exception:
+            print("Failed to import tools")
             return instances
         
         try:
@@ -187,6 +188,7 @@ class ToolsFnAgent:
             tools_mod = importlib.import_module('tools.base_travel_tool')
             base_tool_cls = getattr(tools_mod, 'BaseTravelTool', None)
         except Exception:
+            print("Failed to import BaseTravelTool")
             return instances
         
         if base_tool_cls is None:
@@ -200,6 +202,7 @@ class ToolsFnAgent:
                 if inst_name:
                     instances[inst_name] = inst
             except Exception:
+                print(f"Failed to instantiate {cls}")
                 continue
         
         return instances
