@@ -1,5 +1,5 @@
 [
-    {
+  {
     "type": "function",
     "function": {
       "name": "query_train_info",
@@ -27,8 +27,8 @@
         "required": ["origin", "destination", "depDate"]
       }
     }
-},
-{
+  },
+  {
     "type": "function",
     "function": {
       "name": "query_flight_info",
@@ -53,11 +53,11 @@
             "description": "Flight seat class: Economy Class, Business Class, First Class"
           }
         },
-        "required": ["origin","destination","depDate"]
+        "required": ["origin", "destination", "depDate"]
       }
     }
-},
-{
+  },
+  {
     "type": "function",
     "function": {
       "name": "query_hotel_info",
@@ -82,136 +82,158 @@
             "description": "Hotel star rating: 1~5; single value"
           },
           "hotelBrands": {
-              "type": "string",
-              "description": "Hotel brand, only supports single value query. Optional brands: Ji Hotel, Atour Hotel, Marriott, Hilton, Home Inn, Jinjiang Inn, Hanting Hotel, Orange Hotel"
+            "type": "string",
+            "description": "Hotel brand, only supports single value query. Optional brands: Ji Hotel, Atour Hotel, Marriott, Hilton, Home Inn, Jinjiang Inn, Hanting Hotel, Orange Hotel"
           }
         },
-        "required": ["destination","checkinDate","checkoutDate"]
+        "required": ["destination", "checkinDate", "checkoutDate"]
       }
     }
-},
-{
-  "type": "function",
-  "function": {
-    "name": "query_attraction_details",
-    "description": "Query attraction detailed information. Based on the attraction name, returns complete information including: attraction ID, name, city, latitude and longitude coordinates, attraction description, user rating, opening time, closing time, closing dates, recommended visit duration (minimum/maximum hours), ticket price, attraction type, etc.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "attraction_name": {
-          "type": "string",
-          "description": "Attraction name"
-        }
-      },
-      "required": ["attraction_name"]
-    }
-  }
-},
-{
-  "type": "function",
-  "function": {
-    "name": "recommend_attractions",
-    "description": "Search and return popular attraction information for a city based on city keyword (attraction name, description, type, etc.). During travel plan generation, all attraction information must strictly come from the results returned by this tool, and must not be fabricated or use attraction data from other sources. The attraction names used must be exactly the same as the query results, and cannot be abbreviated or renamed.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "city": {
-          "type": "string",
-          "description": "City name or keyword"
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_attraction_details",
+      "description": "Query attraction detailed information. Based on the attraction name, returns complete information including: attraction ID, name, city, latitude and longitude coordinates, attraction description, user rating, opening time, closing time, closing dates, recommended visit duration (minimum/maximum hours), ticket price, attraction type, etc.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "attraction_name": {
+            "type": "string",
+            "description": "Attraction name"
+          }
         },
-        "attraction_type": {
-          "type": "string",
-          "description": "Attraction type filter (enum), options: 'Historical and Cultural', 'Natural Scenery', 'Art Exhibition', 'City Landmark', 'Theme Park', 'Leisure Experience'."
-        }
-      },
-      "required": ["city"]
+        "required": ["attraction_name"]
+      }
     }
-  }
-},
-{
+  },
+  {
     "type": "function",
     "function": {
-        "name": "search_location",
-        "description": "Query the latitude and longitude coordinates corresponding to a place name. For example, inputting 'Beijing South Railway Station' returns its coordinates, with values retained to six decimal places. In travel plans, all involved place names must strictly come from the results returned by other tools and must be exactly the same.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "place_name": {
-                    "type": "string",
-                    "description": "The place name to query, for example: 'Lao She Teahouse'"
-                }
-            },
-            "required": [
-                "place_name"
-            ]
-        }
+      "name": "recommend_attractions",
+      "description": "Search and return popular attraction information for a city based on city keyword (attraction name, description, type, etc.). During travel plan generation, all attraction information must strictly come from the results returned by this tool, and must not be fabricated or use attraction data from other sources. The attraction names used must be exactly the same as the query results, and cannot be abbreviated or renamed.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string",
+            "description": "City name or keyword"
+          },
+          "attraction_type": {
+            "type": "string",
+            "description": "Attraction type filter (enum), options: 'Historical and Cultural', 'Natural Scenery', 'Art Exhibition', 'City Landmark', 'Theme Park', 'Leisure Experience'."
+          }
+        },
+        "required": ["city"]
+      }
     }
-},
-{
+  },
+  {
     "type": "function",
     "function": {
-        "name": "query_road_route_info",
-        "description": "Calculate and return road route details between two locations, including distance (meters), estimated duration (minutes) and estimated cost (currency). This function automatically selects the transportation mode based on total distance: walking for 2 kilometers or less (cost 0), and driving (taxi) mode for more than 2 kilometers. The estimated cost is for one vehicle, which can accommodate 4 people by default.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "origin": {
-                    "type": "string",
-                    "description": "Origin coordinates (format: latitude,longitude), precision retained to 6 decimal places"
-                },
-                "destination": {
-                    "type": "string",
-                    "description": "Destination coordinates (format: latitude,longitude), precision retained to 6 decimal places"
-                }
-            },
-            "required": [
-                "origin",
-                "destination"
-            ]
-        }
+      "name": "search_location",
+      "description": "Query the latitude and longitude coordinates corresponding to a place name. For example, inputting 'Beijing South Railway Station' returns its coordinates, with values retained to six decimal places. In travel plans, all involved place names must strictly come from the results returned by other tools and must be exactly the same.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "place_name": {
+            "type": "string",
+            "description": "The place name to query, for example: 'Lao She Teahouse'"
+          }
+        },
+        "required": ["place_name"]
+      }
     }
-},
-{
+  },
+  {
     "type": "function",
     "function": {
-        "name": "recommend_restaurants",
-        "description": "Recommend nearby restaurant information based on specified latitude and longitude coordinates. The returned list contains detailed information such as restaurant name, latitude and longitude coordinates, price per person, rating, business hours, etc.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "latitude": {
-                    "type": "string",
-                    "description": "Latitude coordinate, precision retained to 6 decimal places"
-                },
-                "longitude": {
-                    "type": "string",
-                    "description": "Longitude coordinate, precision retained to 6 decimal places"
-                }
-            },
-            "required": [
-                "latitude",
-                "longitude"
-            ]
-        }
+      "name": "query_road_route_info",
+      "description": "Calculate and return road route details between two locations, including distance (meters), estimated duration (minutes) and estimated cost (currency). This function automatically selects the transportation mode based on total distance: walking for 2 kilometers or less (cost 0), and driving (taxi) mode for more than 2 kilometers. The estimated cost is for one vehicle, which can accommodate 4 people by default.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Origin coordinates (format: latitude,longitude), precision retained to 6 decimal places"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Destination coordinates (format: latitude,longitude), precision retained to 6 decimal places"
+          }
+        },
+        "required": ["origin", "destination"]
+      }
     }
-},
-{
-  "type": "function",
-  "function": {
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "recommend_restaurants",
+      "description": "Recommend nearby restaurant information based on specified latitude and longitude coordinates. The returned list contains detailed information such as restaurant name, latitude and longitude coordinates, price per person, rating, business hours, etc.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "string",
+            "description": "Latitude coordinate, precision retained to 6 decimal places"
+          },
+          "longitude": {
+            "type": "string",
+            "description": "Longitude coordinate, precision retained to 6 decimal places"
+          }
+        },
+        "required": ["latitude", "longitude"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
       "name": "query_restaurant_details",
       "description": "Query detailed information about a restaurant. Based on the restaurant name, returns complete information including: restaurant name, latitude and longitude coordinates, price per person, opening time, closing time, rating and other detailed information.",
       "parameters": {
-          "type": "object",
-          "properties": {
-              "restaurant_name": {
-                  "type": "string",
-                  "description": "Restaurant name"
-              }
-          },
-          "required": [
-              "restaurant_name"
-          ]
+        "type": "object",
+        "properties": {
+          "restaurant_name": {
+            "type": "string",
+            "description": "Restaurant name"
+          }
+        },
+        "required": ["restaurant_name"]
       }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "write_todo",
+      "description": "Use this tool to create and manage a structured task list for deep planning tasks. This helps you track progress, organize complex tasks, and demonstrate thoroughness to the user. It also helps the user understand the progress of the task and overall progress of their requests. ## Examples of When to Use the Todo List <example> User: Plan a two-day trip for three people from Hangzhou to Suzhou, departing April 16, 2026 and returning the evening of April 17. The total budget should be within 3200 yuan. There will be three of us traveling, and we plan to take the high-speed train; please suggest suitable train schedules. Book two rooms in a three-star hotel with a fitness center. The itinerary must include visits to Suzhou Center Mall and the Humble Administrator’s Garden. Also, recommend a restaurant near Pingjiang Road that offers gluetun free menu. Assistant: *Creates todo list with the following items:* 1. Search for Hangzhou → Suzhou train options for the morning of April 16, select a train based on remaining seats and departure time. 2. Query Suzhou → Hangzhou train options for the evening of April 17, select a train based on remaining seats and departure time. 3. Compare seat availability, travel times, and ticket prices, and select suitable trains. 4. Query three-star hotels in Suzhou with a fitness center for the stay from April 16 to April 17, 2026, and select one with two rooms available. 5. Retrieve attraction details for the must-visit locations: Suzhou Center Mall, Humble Administrator’s Garden, and Pingjiang Road. 6. Find restaurants near Pingjiang Road that offer gluetun free menu. 7. Obtain coordinates and road-route segments between all scheduled points (train stations, hotel, attractions, and restaurants). 8. If time permits, fetch additional attraction or restaurant recommendations based on the remaining schedule. 9. Retrieve coordinates and route segments for any additional attractions or restaurants added to the plan. 10. Build a continuous timeline itinerary and an itemized budget ensuring the total cost stays within ¥3200. 11. Verify the itinerary for continuous data flow and proper time alignment between all activities. <reasoning> The assistant generated the above TODOs for the following reasons: 1. First, the assistant should query train and hotel details, since they anchor the itinerary. The assistant then makes selections based on **availability** and other constraints mentioned by the user. 2. Next, the assistant should retrieve details of the must-visit attractions and restaurant options. 3. Once the required constraints are gathered, the assistant should identify and plan any missing meals or attractions needed to generate a continuous timeline. 4. After collecting the additional information, the assistant should create the itinerary and validate the cost, availability, and time alignment between all activities. </reasoning> </example> ## Task States and Management 1. **Task States**: Use these states to track progress: - pending: Task not yet started - in_progress: Currently working on (limit to ONE task at a time) - completed: Task finished successfully 2. **Task Management**: - Update task status in real-time as you work - Mark tasks complete IMMEDIATELY after finishing (don't batch completions) - Exactly ONE task must be in_progress at any time (not less, not more) - Complete current tasks before starting new ones - Remove tasks that are no longer relevant from the list entirely 3. **Task Completion Requirements**: - ONLY mark a task as completed when you have FULLY accomplished it - If you encounter errors, blockers, or cannot finish, keep the task as in_progress - When blocked, create a new task describing what needs to be resolved 4. **Task Breakdown**: - Create specific, actionable items - Break complex tasks into smaller, manageable steps - Use clear, descriptive task content When in doubt, use this tool. Being proactive with task management demonstrates attentiveness and ensures you complete all requirements successfully.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "todos": {
+            "type": "array",
+            "description": "List of todo items",
+            "items": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "type": "string",
+                  "description": "The todo item content"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["pending", "in_progress", "completed"],
+                  "description": "The status of the todo item"
+                }
+              },
+              "required": ["content", "status"]
+            }
+          }
+        },
+        "required": ["todos"]
+      }
+    }
   }
-}
 ]
