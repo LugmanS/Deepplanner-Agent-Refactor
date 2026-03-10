@@ -234,7 +234,7 @@ def convert_reports(
     output_dir.mkdir(parents=True, exist_ok=True)
     
     # Always use qwen-plus for conversion
-    conversion_model = 'qwen-plus'
+    conversion_model = os.environ.get('CONVERSION_MODEL', 'qwen-plus')
     
     # Load model config and create client
     model_config = load_model_config(conversion_model)
