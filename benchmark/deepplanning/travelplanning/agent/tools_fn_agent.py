@@ -119,8 +119,14 @@ class ToolsFnAgent:
         - Otherwise wrap as function definition
         """
         tools: List[Dict[str, Any]] = []
+        
+        is_custom_tools_enabled = os.getenv('CUSTOM_TOOLS_ENABLED', 'false').lower() == 'true'
+        
         for s in schemas:
             if isinstance(s, dict) and s.get('type') == 'function' and isinstance(s.get('function'), dict):
+                if not is_custom_tools_enabled and s['function']['name'] in ('write_todo', 'write_note', 'get_notes'):
+                    continue
+                
                 tools.append(s)
                 continue
             if not isinstance(s, dict):
@@ -180,7 +186,6 @@ class ToolsFnAgent:
         try:
             import tools  # noqa: F401
         except Exception:
-            print("Failed to import tools")
             return instances
         
         try:
@@ -188,7 +193,6 @@ class ToolsFnAgent:
             tools_mod = importlib.import_module('tools.base_travel_tool')
             base_tool_cls = getattr(tools_mod, 'BaseTravelTool', None)
         except Exception:
-            print("Failed to import BaseTravelTool")
             return instances
         
         if base_tool_cls is None:
@@ -202,7 +206,6 @@ class ToolsFnAgent:
                 if inst_name:
                     instances[inst_name] = inst
             except Exception:
-                print(f"Failed to instantiate {cls}")
                 continue
         
         return instances
