@@ -32,6 +32,13 @@
       "base_url": "https://inference.baseten.co/v1",
       "api_key_env": "BASETEN_API_KEY",
       "temperature": 0.0
+    },
+    "minimax-m-2-5-baseten": {
+      "model_name": "MiniMaxAI/MiniMax-M2.5",
+      "model_type": "openai",
+      "base_url": "https://inference.baseten.co/v1",
+      "api_key_env": "BASETEN_API_KEY",
+      "temperature": 0.0
     }
   }
 }
