@@ -298,5 +298,30 @@
         "required": ["draft_plan"]
       }
     }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "create_checkpoint",
+      "description": "Use this tool to save your progress and consolidate your memory after completing a major milestone during the Information Collection phase (e.g., after selecting all intercity flights, or after finalizing all hotels and restaurants for a specific city). Because your tool calls consume a large amount of memory, the system will prune the conversation history up to this point to save space. Therefore, the data you pass into this tool acts as your sole remaining memory of these selections. You must not summarize loosely. You must extract and save the exact names, prices, flight/train numbers, durations, operating hours, and locations exactly as they were returned by the original tools. If you omit a price or slightly alter a name in this checkpoint, you will fail the final plan validation because you will no longer have access to the original raw data.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "milestone_name": {
+            "type": "string",
+            "description": "A short, descriptive name for this checkpoint (e.g., 'Intercity_Transport_Selected', 'Beijing_Hotels_and_Meals')"
+          },
+          "exact_selections": {
+            "type": "string",
+            "description": "A highly structured, meticulously detailed record of the items you have selected. You must include the exact entity names, prices (per person/per room), durations, vehicle counts, operating hours, and spatial data required for the final plan syntax. Treat this parameter as a strict database insertion."
+          },
+          "next_steps": {
+            "type": "string",
+            "description": "A brief note to your future self about what information you need to collect next immediately after this checkpoint is saved."
+          }
+        },
+        "required": ["milestone_name", "exact_selections", "next_steps"]
+      }
+    }
   }
 ]

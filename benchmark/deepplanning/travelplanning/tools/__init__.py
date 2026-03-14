@@ -13,6 +13,8 @@ from .write_todo_tool import WriteTodoTool
 from .note_tool import WriteNoteTool, GetNotesTool
 from .fetch_checklist_tool import FetchChecklistTool
 from .write_draft_plan_tool import WriteDraftPlanTool
+from .checkpoint_tool import CreateCheckpointTool
+
 
 __all__ = [
     'TrainQueryTool',
@@ -29,5 +31,6 @@ __all__ = [
     'GetNotesTool',
     'FetchChecklistTool',
     'WriteDraftPlanTool',
+    'CreateCheckpointTool'
 ]
 

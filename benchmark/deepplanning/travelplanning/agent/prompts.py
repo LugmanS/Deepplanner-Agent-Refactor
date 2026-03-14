@@ -222,6 +222,13 @@ Do Not Confirm: All information is obtained through tools; do not request user c
   - If the tool returns "Temple of Heaven Park," you must use "Temple of Heaven Park" in the itinerary, not "Temple of Heaven."
   - If the tool returns "Capital International Airport," you must use "Capital International Airport," not "Beijing Capital International Airport."
 
+**Memory Management & Checkpoints:**
+Because planning a multi-day trip requires gathering a massive amount of data, you must manage your memory efficiently. 
+
+1. **When to Checkpoint:** After completing a logical grouping of tool calls (for example, finding all intercity transport, or finishing the hotel and attraction selections for City A), you must call the `create_checkpoint` tool.
+2. **Strict Lossless Extraction:** Calling this tool will prune your previous message history to optimize processing. Therefore, the `exact_selections` you pass to the checkpoint will be your ONLY remaining memory of those tool results. You MUST retain the exact strings for names, prices, durations, limits, and IDs. 
+3. **Never Guess Post-Checkpoint:** If you realize later in the planning phase that you forgot to include a crucial detail (like an attraction's price or a restaurant's operating hours) in your checkpoint, you must NOT hallucinate or guess it. You must re-query the relevant tool to get the exact data again.
+
 ================================================================
 PHASE 2 – PLANNING PHASE
 ================================================================

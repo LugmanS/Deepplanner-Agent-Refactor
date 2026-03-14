@@ -58,7 +58,8 @@ class ToolsFnAgent:
             self.database_base_path = project_root / 'database' / f'database_{language}'
 
         self._notes_store: list = []  # Shared notes list, reset per task
-
+        self._checkpoints_store: list = []  # Shared checkpoints list, reset per task
+        
         self.tools_schema = self._load_tool_schemas()
         self.openai_tools = self._build_openai_tools(self.tools_schema)
         self.tool_instances = self._load_tool_instances()
@@ -121,7 +122,7 @@ class ToolsFnAgent:
         tools: List[Dict[str, Any]] = []
         
         enabled_custom_tools = os.getenv('ENABLED_CUSTOM_TOOLS', "").split(',')
-        custom_tools = ["write_todo", "write_note", "get_notes", "write_draft_plan", "fetch_checklist"]
+        custom_tools = ["write_todo", "write_note", "get_notes", "write_draft_plan", "fetch_checklist", "create_checkpoint"]
         
         for s in schemas:
             if isinstance(s, dict) and s.get('type') == 'function' and isinstance(s.get('function'), dict):
@@ -147,10 +148,12 @@ class ToolsFnAgent:
             'language': self.language  # Pass language to tool instance
         }
         
-        # Inject shared notes store for note tools
+        # Inject shared stores for stateful tools
         tool_name = getattr(tool_cls, 'name', '')
         if tool_name in ('write_note', 'get_notes'):
             cfg['notes_store'] = self._notes_store
+        if tool_name == 'create_checkpoint':
+            cfg['checkpoints_store'] = self._checkpoints_store
         
         if self.sample_id is None:
             return cfg
@@ -263,6 +266,47 @@ class ToolsFnAgent:
         
         return calls
 
+    def _format_checkpoints(self) -> str:
+        """Format all accumulated checkpoints into a summary message."""
+        parts = ["The following checkpoints summarize the progress made so far:\n"]
+        for i, cp in enumerate(self._checkpoints_store, 1):
+            parts.append(f"--- Checkpoint {i}: {cp['milestone_name']} ---")
+            parts.append(f"Selections: {cp['exact_selections']}")
+            parts.append(f"Next Steps: {cp['next_steps']}")
+            parts.append("")
+        return "\n".join(parts)
+
+    def _apply_checkpoint_pruning(self, messages: List) -> List:
+        """
+        Prune messages for context management.
+
+        Keeps only:
+        1. The system prompt (if present)
+        2. The first user message (original query)
+        3. A new user message synthesised from all accumulated checkpoints
+        """
+        pruned: List[Dict[str, Any]] = []
+
+        # Preserve system prompt
+        for msg in messages:
+            msg_dict = self._message_to_dict(msg) if not isinstance(msg, dict) else msg
+            if msg_dict.get('role') == 'system':
+                pruned.append(msg)
+                break
+
+        # Preserve first user message
+        for msg in messages:
+            msg_dict = self._message_to_dict(msg) if not isinstance(msg, dict) else msg
+            if msg_dict.get('role') == 'user':
+                pruned.append(msg)
+                break
+
+        # Add checkpoint summary as a new user message
+        checkpoint_summary = self._format_checkpoints()
+        pruned.append({"role": "user", "content": checkpoint_summary})
+
+        return pruned
+    
     def _extract_plan_content(self, text: str) -> str:
         """Extract content from <plan>...</plan> tags"""
         if not text:
@@ -381,9 +425,13 @@ class ToolsFnAgent:
             (final_plan, messages): Final plan and complete message history
         """
         messages: List[Dict[str, Any]] = []
+        full_messages: List[Dict[str, Any]] = []
         if system_prompt:
             messages.append({"role": "system", "content": system_prompt})
+            full_messages.append({"role": "system", "content": system_prompt})
+        
         messages.append({"role": "user", "content": user_query})
+        full_messages.append({"role": "user", "content": user_query})
         
         llm_budget = max_llm_calls
         
@@ -398,25 +446,34 @@ class ToolsFnAgent:
             token_usage = self._extract_token_usage(resp)
             if token_usage is not None:
                 assistant_msg['token_usage'] = token_usage
+            
             messages.append(assistant_msg)
+            full_messages.append(assistant_msg)
+            
             if calls:
                 # Execute tool calls
                 for call in calls:
                     tool_result = self._exec_tool(call['name'], call['arguments'])
-                    messages.append({
+                    tool_msg = {
                         "role": "tool",
                         "tool_call_id": call['id'],
                         "name": call['name'],
                         "content": tool_result,
-                    })
+                    }
+                    messages.append(tool_msg)
+                    full_messages.append(tool_msg)
+                    
+                if any(call['name'] == 'create_checkpoint' for call in calls):
+                    messages = self._apply_checkpoint_pruning(messages)
+                    
                 continue
             
             # No tool calls → Return final answer
             # msg was already added to messages at line 343
             final_content = self._extract_plan_content(msg.content or '')
-            return final_content, messages
+            return final_content, full_messages
         
-        return "Reached max LLM calls without final answer.", messages
+        return "Reached max LLM calls without final answer.", full_messages
 
 
 def run_agent_inference(
