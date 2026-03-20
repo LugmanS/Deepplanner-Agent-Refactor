@@ -524,7 +524,7 @@ def run_agent_inference(
                 'results': []
             }
     
-    test_data = [test_data[4]]
+    test_data = test_data[:30]
     
     print(f"\n{'='*80}")
     print(f"Agent Inference")
