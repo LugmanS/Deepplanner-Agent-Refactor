@@ -530,7 +530,9 @@ def run_agent_inference(
                 'results': []
             }
     
-    test_data = test_data[:30]
+    test_data_limit = os.getenv('TEST_DATA_LIMIT', None)
+    if test_data_limit is not None:
+        test_data = test_data[:int(test_data_limit)]
     
     print(f"\n{'='*80}")
     print(f"Agent Inference")

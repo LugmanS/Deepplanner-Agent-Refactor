@@ -274,6 +274,10 @@ def evaluate_plans(
     print(f"\nLoading test data from {test_data_path}")
     with open(test_data_path, 'r', encoding='utf-8') as f:
         test_data = json.load(f)
+        
+    test_data_limit = os.getenv('TEST_DATA_LIMIT', None)
+    if test_data_limit is not None:
+        test_data = test_data[:int(test_data_limit)]
     
     # Ensure test_data is a list
     if isinstance(test_data, dict):
