@@ -1,10 +1,8 @@
 """
 Convert agent reports to structured JSON format for evaluation
-
 This module uses an LLM to parse the agent's natural language travel plans
 and convert them into structured JSON format required by the evaluation module.
 """
-
 import json
 import os
 import re
@@ -14,15 +12,12 @@ from pathlib import Path
 from typing import Dict, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
-
 import openai
-
+import litellm
 # Add parent directory to path to import prompts and call_llm utilities
 sys.path.insert(0, str(Path(__file__).parent.parent / 'agent'))
 from prompts import get_format_convert_prompt
 from call_llm import load_model_config, create_client
-
-
 # Load environment variables from .env file
 def _load_env_from_dotenv() -> None:
     """
@@ -57,11 +52,8 @@ def _load_env_from_dotenv() -> None:
                     os.environ[key] = value
     except Exception as e:
         pass  # Silently ignore if .env loading fails
-
 # Load .env at module import time
 _load_env_from_dotenv()
-
-
 def extract_json_from_response(text: str) -> Optional[str]:
     """Extract JSON content from model output (looks for <JSON>...</JSON> tags)"""
     if not text:
@@ -74,13 +66,56 @@ def extract_json_from_response(text: str) -> Optional[str]:
     
     # If no tags, return as-is and let caller try to parse
     return text
+def _call_model(
+    client,
+    model_name: str,
+    messages: list,
+    max_tokens: int = 10240,
+) -> str:
+    """
+    Call the LLM and return the response text content.
+
+    Handles both plain OpenAI-compatible clients and litellm config dicts
+    (as returned by ``create_client`` when ``model_type == 'litellm'``).
+
+    Args:
+        client: Either an ``openai.OpenAI`` instance or the litellm config
+                dict produced by ``create_client``.
+        model_name: The actual model name string to pass to the API.
+        messages: Chat message list.
+        max_tokens: Maximum tokens for the completion.
+
+    Returns:
+        The text content of the first choice's message.
+    """
+    is_litellm = isinstance(client, dict) and client.get('_litellm')
+
+    if is_litellm:
+        params = {
+            "model": model_name,
+            "messages": messages,
+            "max_tokens": max_tokens,
+        }
+        if client.get('api_key'):
+            params["api_key"] = client['api_key']
+        if client.get('base_url'):
+            params["api_base"] = client['base_url']
+        response = litellm.completion(**params)
+    else:
+        response = client.chat.completions.create(
+            model=model_name,
+            messages=messages,
+            max_tokens=max_tokens,
+        )
+
+    return response.choices[0].message.content or ""
 
 
 def process_single_report(
     report_file: Path,
     output_dir: Path,
     model_name: str,
-    client: openai.OpenAI,
+    client,
     format_prompt: str,
     print_lock: Lock,
     max_retries: int = 30
@@ -92,7 +127,7 @@ def process_single_report(
         report_file: Input report file path
         output_dir: Output directory for converted JSON
         model_name: Model name for API call
-        client: OpenAI client instance
+        client: OpenAI client instance or litellm config dict
         format_prompt: Format conversion prompt
         print_lock: Thread-safe print lock
         max_retries: Maximum number of retries for JSON parsing errors
@@ -137,14 +172,8 @@ def process_single_report(
                 {"role": "user", "content": raw_text},
             ]
             
-            # Call LLM for conversion
-            resp = client.chat.completions.create(
-                model=model_name,
-                messages=messages,
-                max_tokens=10240
-            )
-            
-            content = resp.choices[0].message.content or ""
+            # Call LLM for conversion (supports both OpenAI and litellm clients)
+            content = _call_model(client, model_name, messages)
             
             # Extract JSON
             json_payload = extract_json_from_response(content)
@@ -203,8 +232,6 @@ def process_single_report(
                     'error': str(e)
                 }
             time.sleep(1)
-
-
 def convert_reports(
     result_dir: Path,
     language: str = 'zh',
@@ -358,8 +385,6 @@ def convert_reports(
         'results': results,
         'elapsed_time': elapsed_time,
     }
-
-
 if __name__ == "__main__":
     import argparse
     
@@ -385,4 +410,3 @@ if __name__ == "__main__":
     )
     
     print(f"Conversion completed: {result['success']}/{result['total']} succeeded")
-
