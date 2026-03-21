@@ -20,6 +20,12 @@
         "reasoning_effort": "low"
       }
     },
+    "minimax-m-2-5-bedrock": {
+      "model_name": "minimax.minimax-m2.5",
+      "model_type": "litellm",
+      "base_url": "",
+      "api_key_env": "OPENAI_API_KEY"
+    },
     "claude-sonnet-4-6": {
       "model_name": "us.anthropic.claude-sonnet-4-6",
       "model_type": "litellm",
