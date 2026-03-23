@@ -21,7 +21,7 @@
       }
     },
     "minimax-m-2-5-bedrock": {
-      "model_name": "minimax.minimax-m2.5",
+      "model_name": "bedrock/minimax.minimax-m2.5",
       "model_type": "litellm",
       "base_url": "",
       "api_key_env": "OPENAI_API_KEY"
@@ -51,6 +51,12 @@
       "base_url": "https://inference.baseten.co/v1",
       "api_key_env": "BASETEN_API_KEY",
       "temperature": 0.0
+    },
+    "nemotron-super-3": {
+      "model_name": "bedrock/nvidia.nemotron-super-3-120b",
+      "model_type": "litellm",
+      "base_url": "",
+      "api_key_env": "OPENAI_API_KEY"
     }
   }
 }

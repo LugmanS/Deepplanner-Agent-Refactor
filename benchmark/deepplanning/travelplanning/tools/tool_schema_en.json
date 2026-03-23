@@ -275,10 +275,10 @@
         "properties": {
           "section_slug": {
             "type": "string",
-            "description": "Optional checklist section slug/key to fetch."
+            "description": "Checklist section slug to fetch."
           }
         },
-        "required": []
+        "required": ["section_slug"]
       }
     }
   },
