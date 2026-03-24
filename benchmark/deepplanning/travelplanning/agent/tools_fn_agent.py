@@ -160,8 +160,6 @@ class ToolsFnAgent:
             cfg['notes_store'] = self._notes_store
         if tool_name == 'create_checkpoint':
             cfg['checkpoints_store'] = self._checkpoints_store
-        if tool_name == 'execute_code':
-            cfg['tool_instances'] = self.tool_instances
         
         if self.sample_id is None:
             return cfg
