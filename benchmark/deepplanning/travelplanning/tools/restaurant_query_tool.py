@@ -47,7 +47,7 @@ class RestaurantRecommendTool(BaseTravelTool):
         Execute restaurant recommendation
         
         Args:
-            params: Query parameters containing latitude, longitude
+            params: Query parameters containing latitude, longitude, and optional sort_by
             
         Returns:
             JSON string of query results
@@ -56,6 +56,7 @@ class RestaurantRecommendTool(BaseTravelTool):
         
         latitude = params.get('latitude')
         longitude = params.get('longitude')
+        sort_by = params.get('sort_by')
         
         if self.data is None:
             return self.fields['db_not_loaded']
@@ -98,7 +99,50 @@ class RestaurantRecommendTool(BaseTravelTool):
             
             results.append(result)
         
+        # Sort results if sort_by is provided
+        if sort_by:
+            results = self._sort_results(results, sort_by)
+        
         return self.format_result_as_json(results)
+    
+    def _sort_results(self, results: list, sort_by: str) -> list:
+        """
+        Sort results by the specified key
+        
+        Args:
+            results: List of restaurant result dictionaries
+            sort_by: Sort key - 'rating' (desc), 'distance' (asc), or 'price' (asc)
+            
+        Returns:
+            Sorted list of results
+        """
+        key_mapping = {
+            'rating': 'rating',
+            'price': 'price_per_person',
+            'distance': 'distance'
+        }
+        
+        # Sort order: rating = desc, price/distance = asc
+        reverse_order = {
+            'rating': True,
+            'price': False,
+            'distance': False
+        }
+        
+        sort_key = key_mapping.get(sort_by)
+        if not sort_key:
+            return results
+        
+        def get_sort_value(item):
+            value = item.get(sort_key, 0)
+            if isinstance(value, str):
+                try:
+                    return float(value)
+                except (ValueError, TypeError):
+                    return 0
+            return value
+        
+        return sorted(results, key=get_sort_value, reverse=reverse_order.get(sort_by, False))
 
 
 @register_tool('query_restaurant_details')

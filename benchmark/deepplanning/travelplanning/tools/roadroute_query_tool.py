@@ -85,7 +85,7 @@ class RoadRouteInfoQueryTool(BaseTravelTool):
             "origin": row.get('origin', origin),
             "destination": row.get('destination', destination),
             "distance_in_meters": int(row.get('distance_meters', 0)),
-            "duration_in_minutes": int(row.get('duration_minutes', 0)),
+            "duration_in_hours": round(row.get('duration_minutes', 0) / 60, 2),
             "cost": int(row.get('cost', 0))
         }
         

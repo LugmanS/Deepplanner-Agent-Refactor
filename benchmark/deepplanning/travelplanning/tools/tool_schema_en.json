@@ -22,6 +22,11 @@
           "seatClassName": {
             "type": "string",
             "description": "Train seat class: First Class Seat, Second Class Seat,Business Seat"
+          },
+          "sort_by": {
+            "type": "string",
+            "enum": ["price", "duration", "departure_time"],
+            "description": "Optional sort key for results. When provided, results are sorted in ascending order by: price (cheapest first), duration (total journey duration), or departure_time (earliest departure first)."
           }
         },
         "required": ["origin", "destination", "depDate"]
@@ -51,6 +56,11 @@
           "seatClassName": {
             "type": "string",
             "description": "Flight seat class: Economy Class, Business Class, First Class"
+          },
+          "sort_by": {
+            "type": "string",
+            "enum": ["price", "duration", "departure_time"],
+            "description": "Optional sort key for results. When provided, results are sorted in ascending order by: price (ticket price), duration (total journey duration), or departure_time (earliest departure first)."
           }
         },
         "required": ["origin", "destination", "depDate"]
@@ -181,6 +191,11 @@
           "longitude": {
             "type": "string",
             "description": "Longitude coordinate, precision retained to 6 decimal places"
+          },
+          "sort_by": {
+            "type": "string",
+            "enum": ["rating", "distance", "price"],
+            "description": "Optional sort key for results. When provided, results are sorted in descending order by: rating (restaurant rating), distance (distance from query location), or price (price per person)."
           }
         },
         "required": ["latitude", "longitude"]

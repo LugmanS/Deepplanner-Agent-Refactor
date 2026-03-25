@@ -56,7 +56,7 @@ class TrainQueryTool(BaseTravelTool):
         Execute train ticket query
         
         Args:
-            params: Query parameters containing origin, destination, depDate
+            params: Query parameters containing origin, destination, depDate, sort_by (optional)
             
         Returns:
             JSON string of query results
@@ -68,6 +68,7 @@ class TrainQueryTool(BaseTravelTool):
         destination = params.get('destination')
         dep_date = params.get('depDate')
         seat_class = params.get('seatClassName', '')
+        sort_by = params.get('sort_by')
         
         # If database not loaded
         if self.data is None:
@@ -128,4 +129,44 @@ class TrainQueryTool(BaseTravelTool):
             route_data["price"] = route_price if route_price is not None else 0
             routes.append([route_data])
         
+        # Sort results if sort_by is provided
+        if sort_by:
+            routes = self._sort_results(routes, sort_by)
+        
         return self.format_result_as_json(routes)
+    
+    def _sort_results(self, results: list, sort_by: str) -> list:
+        """
+        Sort results by the specified key
+        
+        Args:
+            results: List of train route dictionaries (each wrapped in a list)
+            sort_by: Sort key - 'price', 'duration', or 'departure_time'
+            
+        Returns:
+            Sorted list of results
+        """
+        if sort_by == 'price':
+            return sorted(results, key=lambda x: x[0].get('price', 0), reverse=False)
+        
+        elif sort_by == 'duration':
+            def get_total_duration(route_list):
+                route = route_list[0]
+                total = 0
+                for key, value in route.items():
+                    if isinstance(value, dict) and 'duration' in value:
+                        total += value.get('duration', 0)
+                return total
+            return sorted(results, key=get_total_duration, reverse=False)
+        
+        elif sort_by == 'departure_time':
+            def get_departure_time(route_list):
+                route = route_list[0]
+                # Get depDateTime from first segment
+                for key, value in route.items():
+                    if isinstance(value, dict) and 'depDateTime' in value:
+                        return value.get('depDateTime', '')
+                return ''
+            return sorted(results, key=get_departure_time, reverse=False)
+        
+        return results
