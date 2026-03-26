@@ -191,7 +191,10 @@ class WriteDraftPlanTool(BaseTravelTool):
         Returns:
             Dict with keys: section, raw_response, token_usage
         """
-        from ..agent.call_llm import call_llm
+        try:
+            from ..agent.call_llm import call_llm
+        except ImportError:
+            from agent.call_llm import call_llm
 
         print(f"  [eval] Section '{section_name}': starting LLM call "
               f"(model={model}, checklist_items={len(checklist_items)}, "
