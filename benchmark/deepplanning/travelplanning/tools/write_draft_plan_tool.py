@@ -193,6 +193,10 @@ class WriteDraftPlanTool(BaseTravelTool):
         """
         from ..agent.call_llm import call_llm
 
+        print(f"  [eval] Section '{section_name}': starting LLM call "
+              f"(model={model}, checklist_items={len(checklist_items)}, "
+              f"tool_results_len={len(tool_results)})")
+
         # Build user message
         parts = [
             f"## User Query\n{user_prompt}",
@@ -216,6 +220,11 @@ class WriteDraftPlanTool(BaseTravelTool):
         response = call_llm(config_name=model, messages=eval_messages)
         content = response.choices[0].message.content or ''
         token_usage = self._extract_token_usage(response)
+
+        print(f"  [eval] Section '{section_name}': LLM responded "
+              f"(response_len={len(content)}, token_usage={token_usage})")
+        print(f"  [eval] Section '{section_name}' raw response (first 300 chars): "
+              f"{content[:300]}")
 
         return {
             'section': section_name,
@@ -242,13 +251,29 @@ class WriteDraftPlanTool(BaseTravelTool):
         messages = self._agent_context.get('messages', [])
         model = self._agent_context.get('model', '')
 
+        print(f"\n{'='*60}")
+        print(f"[write_draft_plan] Evaluation started")
+        print(f"  model          = {model!r}")
+        print(f"  messages count = {len(messages)}")
+        print(f"  draft_plan len = {len(draft_plan)}")
+        print(f"  agent_context keys = {list(self._agent_context.keys())}")
+        if not model:
+            print(f"  ⚠️  WARNING: model is empty — LLM calls will fail!")
+        if not messages:
+            print(f"  ⚠️  WARNING: messages list is empty — no context available!")
+        if not draft_plan:
+            print(f"  ⚠️  WARNING: draft_plan is empty!")
+
         user_prompt = self._extract_user_prompt(messages)
+        print(f"  user_prompt len = {len(user_prompt)}")
 
         # Build tasks for each section
         section_tasks = []
         for section_name, checklist_items in self._checklist.items():
             relevant_tools = SECTION_TOOL_MAPPING.get(section_name, [])
             tool_results = self._extract_tool_results(messages, relevant_tools) if relevant_tools else ''
+            print(f"  Section '{section_name}': {len(checklist_items)} items, "
+                  f"tool_results_len={len(tool_results)}")
             section_tasks.append((section_name, checklist_items, tool_results))
 
         # Evaluate all sections in parallel
@@ -270,10 +295,14 @@ class WriteDraftPlanTool(BaseTravelTool):
                     result = future.result()
                     results.append(result)
                 except Exception as e:
+                    import traceback
+                    print(f"  ❌ [eval] Section '{section}' FAILED with exception: {e}")
+                    traceback.print_exc()
                     results.append({
                         'section': section,
                         'raw_response': '',
                         'token_usage': None,
+                        'error': str(e),
                     })
 
         # Sort results back to original checklist section order
@@ -302,12 +331,25 @@ class WriteDraftPlanTool(BaseTravelTool):
         # Parse each section response, collect only failed items
         failures_by_section: Dict[str, List[Dict]] = {}
         for r in results:
-            items = self._parse_eval_response(r.get('raw_response', ''))
+            raw = r.get('raw_response', '')
+            items = self._parse_eval_response(raw)
+            verdicts = [item.get('verdict') for item in items]
+            print(f"  [eval] Section '{r['section']}': parsed {len(items)} items, "
+                  f"verdicts={verdicts}")
+            if r.get('error'):
+                print(f"  [eval] Section '{r['section']}': had error: {r['error']}")
             failed = [item for item in items if item.get('verdict') == 'fail']
             if failed:
                 failures_by_section[r['section']] = failed
 
         if not failures_by_section:
+            print(f"[write_draft_plan] ✅ All checklist items passed")
+            print(f"  eval_token_usage = {self._agent_context.get('eval_token_usage')}")
+            print(f"{'='*60}\n")
             return json.dumps({"message": "all checklist passed"}, ensure_ascii=False)
 
+        print(f"[write_draft_plan] ❌ Failures in {len(failures_by_section)} section(s): "
+              f"{list(failures_by_section.keys())}")
+        print(f"  eval_token_usage = {self._agent_context.get('eval_token_usage')}")
+        print(f"{'='*60}\n")
         return json.dumps(failures_by_section, ensure_ascii=False)
