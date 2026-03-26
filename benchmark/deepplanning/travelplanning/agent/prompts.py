@@ -414,6 +414,7 @@ Do Not Confirm: All information is obtained through tools; do not request user c
 
 **Rules:**
 - All information in the travel plan must strictly come from tool query results**. Do not fabricate, guess, or use any data outside of tool query results. Completely trust the query results.
+- Whenever sorting is required, you must always use the tool's optional `sort` parameter with the corresponding enum. NEVER attempt to mentally sort data.
 
   **Examples:**
   - All attractions must come from the `recommend_attractions` tool; do not fabricate them yourself.
