@@ -254,6 +254,7 @@ class WriteDraftPlanTool(BaseTravelTool):
 
         return {
             'section': section_name,
+            'input_messages': eval_messages,
             'raw_response': content,
             'token_usage': token_usage,
         }
@@ -354,8 +355,9 @@ class WriteDraftPlanTool(BaseTravelTool):
             'per_section': per_section_usage,
         }
 
-        # Parse each section response, collect only failed items
+        # Parse each section response, build trace, collect only failed items
         failures_by_section: Dict[str, List[Dict]] = {}
+        eval_trace: List[Dict[str, Any]] = []
         for r in results:
             raw = r.get('raw_response', '')
             items = self._parse_eval_response(raw)
@@ -364,9 +366,22 @@ class WriteDraftPlanTool(BaseTravelTool):
                   f"verdicts={verdicts}")
             if r.get('error'):
                 print(f"  [eval] Section '{r['section']}': had error: {r['error']}")
+
+            # Build trace entry for this section
+            eval_trace.append({
+                'section': r['section'],
+                'input_messages': r.get('input_messages', []),
+                'output': raw,
+                'parsed_verdicts': items,
+                'token_usage': r.get('token_usage'),
+                'error': r.get('error'),
+            })
+
             failed = [item for item in items if item.get('verdict') == 'fail']
             if failed:
                 failures_by_section[r['section']] = failed
+
+        self._agent_context['eval_trace'] = eval_trace
 
         if not failures_by_section:
             print(f"[write_draft_plan] ✅ All checklist items passed")

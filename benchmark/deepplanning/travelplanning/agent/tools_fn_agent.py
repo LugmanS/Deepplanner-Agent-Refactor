@@ -490,11 +490,14 @@ class ToolsFnAgent:
                         "name": call['name'],
                         "content": tool_result,
                     }
-                    # Attach eval token usage produced by write_draft_plan
+                    # Attach eval details produced by write_draft_plan
                     if call['name'] == 'write_draft_plan':
                         eval_usage = self._agent_context.get('eval_token_usage')
                         if eval_usage:
                             tool_msg['eval_token_usage'] = eval_usage
+                        eval_trace = self._agent_context.get('eval_trace')
+                        if eval_trace:
+                            tool_msg['eval_trace'] = eval_trace
                     messages.append(tool_msg)
                     full_messages.append(tool_msg)
                     
